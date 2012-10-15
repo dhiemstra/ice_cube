@@ -7,7 +7,7 @@ module IceCube
     extend ::Deprecated
 
     # Get the start time
-    attr_accessor :start_time
+    attr_reader :start_time
     deprecated_alias :start_date, :start_time
     deprecated_alias :start_date=, :start_time=
 
@@ -15,17 +15,27 @@ module IceCube
     attr_accessor :duration
 
     # Get the end time
-    attr_accessor :end_time
+    attr_reader :end_time
     deprecated_alias :end_date, :end_time
     deprecated_alias :end_date=, :end_time=
 
     # Create a new schedule
     def initialize(start_time = nil, options = {})
-      @start_time = start_time || TimeUtil.now
-      @end_time = options[:end_time]
+      self.start_time = start_time || TimeUtil.now
+      self.end_time = options[:end_time]
       @duration = options[:duration]
       @all_recurrence_rules = []
       @all_exception_rules = []
+    end
+    
+    def start_time=(value)
+      validate_time_value(value)
+      @start_time = value
+    end
+    
+    def end_time=(value)
+      validate_time_value(value)
+      @end_time = value
     end
 
     # Add a recurrence time to the schedule
@@ -335,6 +345,12 @@ module IceCube
     end
 
     private
+    
+    def validate_time_value(value)
+      if value && !value.is_a?(Time)
+        raise "Start time must be a Time, #{value.class} given"
+      end
+    end
 
     # Reset all rules for another run
     def reset
